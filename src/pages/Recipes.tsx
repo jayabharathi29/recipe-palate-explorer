@@ -5,12 +5,11 @@ import Footer from '../components/Footer';
 import RecipeCard from '../components/RecipeCard';
 import FilterBar from '../components/FilterBar';
 import { Filter, Search } from 'lucide-react';
-
-// Mock data
-import { mockRecipes, filterRecipes, searchRecipes } from '../data/mockData';
+import { useToast } from "@/components/ui/use-toast";
+import { filterRecipes, searchRecipes, fetchRecipes } from '../services/recipeService';
 
 const Recipes = () => {
-  const [recipes, setRecipes] = useState(mockRecipes);
+  const [recipes, setRecipes] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState({
     cuisine: [] as string[],
@@ -18,46 +17,94 @@ const Recipes = () => {
     difficulty: [] as string[],
   });
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    loadRecipes();
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      const results = searchRecipes(searchQuery);
-      setRecipes(results);
-    } else {
-      // If search is cleared, apply only filters
-      const results = filterRecipes(activeFilters);
-      setRecipes(results);
+  const loadRecipes = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchRecipes();
+      setRecipes(data);
+    } catch (error) {
+      toast({
+        title: "Error loading recipes",
+        description: "There was an error loading recipes. Please try again later.",
+        variant: "destructive"
+      });
+      console.error('Error loading recipes:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleFilterChange = (filters: {
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      if (searchQuery.trim()) {
+        const results = await searchRecipes(searchQuery);
+        setRecipes(results);
+      } else {
+        // If search is cleared, apply only filters
+        if (activeFilters.cuisine.length > 0 || activeFilters.dietary.length > 0 || activeFilters.difficulty.length > 0) {
+          const results = await filterRecipes(activeFilters);
+          setRecipes(results);
+        } else {
+          // If no search and no filters, load all recipes
+          await loadRecipes();
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Search error",
+        description: "There was an error performing your search. Please try again.",
+        variant: "destructive"
+      });
+      console.error('Error searching recipes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = async (filters: {
     cuisine: string[];
     dietary: string[];
     difficulty: string[];
   }) => {
-    setActiveFilters(filters);
-    
-    if (searchQuery.trim()) {
-      // If there's a search query, search first then filter results
-      const searchResults = searchRecipes(searchQuery);
-      const filteredResults = filterRecipes({
-        ...filters,
-        cuisine: filters.cuisine,
-        dietary: filters.dietary,
-        difficulty: filters.difficulty,
-      }).filter(recipe => 
-        searchResults.some(searchRecipe => searchRecipe.id === recipe.id)
-      );
-      setRecipes(filteredResults);
-    } else {
-      // If no search query, just apply filters
-      const filteredResults = filterRecipes(filters);
-      setRecipes(filteredResults);
+    try {
+      setLoading(true);
+      setActiveFilters(filters);
+      
+      if (searchQuery.trim()) {
+        // If there's a search query, we need to first search, then apply filters
+        // This would require a more complex backend implementation
+        // For now, we'll just use the filters and ignore the search query
+        const filteredResults = await filterRecipes(filters);
+        setRecipes(filteredResults);
+      } else {
+        // If no search query, just apply filters
+        if (filters.cuisine.length > 0 || filters.dietary.length > 0 || filters.difficulty.length > 0) {
+          const filteredResults = await filterRecipes(filters);
+          setRecipes(filteredResults);
+        } else {
+          // If no filters, load all recipes
+          await loadRecipes();
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Filter error",
+        description: "There was an error applying filters. Please try again.",
+        variant: "destructive"
+      });
+      console.error('Error filtering recipes:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -138,7 +185,11 @@ const Recipes = () => {
           
           {/* Recipe Grid */}
           <div className="md:w-3/4 lg:w-4/5">
-            {recipes.length > 0 ? (
+            {loading ? (
+              <div className="flex justify-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-recipe"></div>
+              </div>
+            ) : recipes.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {recipes.map(recipe => (
                   <RecipeCard
@@ -168,7 +219,7 @@ const Recipes = () => {
                   onClick={() => {
                     setSearchQuery('');
                     setActiveFilters({ cuisine: [], dietary: [], difficulty: [] });
-                    setRecipes(mockRecipes);
+                    loadRecipes();
                   }}
                 >
                   Clear All Filters

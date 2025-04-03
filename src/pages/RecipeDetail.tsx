@@ -11,34 +11,67 @@ import {
   Heart, 
   Share2 
 } from 'lucide-react';
-
-// Mock data
-import { getRecipeById } from '../data/mockData';
+import { fetchRecipeById } from '../services/recipeService';
+import { useToast } from "@/components/ui/use-toast";
 
 const RecipeDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [recipe, setRecipe] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     window.scrollTo(0, 0);
     if (id) {
-      // In a real app, this would be an API call
-      const foundRecipe = getRecipeById(id);
-      setRecipe(foundRecipe);
-      setLoading(false);
+      loadRecipe(id);
     }
   }, [id]);
   
+  const loadRecipe = async (recipeId: string) => {
+    try {
+      setLoading(true);
+      const recipeData = await fetchRecipeById(recipeId);
+      setRecipe(recipeData);
+    } catch (error) {
+      toast({
+        title: "Error loading recipe",
+        description: "There was an error loading the recipe. Please try again later.",
+        variant: "destructive"
+      });
+      console.error('Error loading recipe:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
-    // In a real app, this would update the database
+    toast({
+      title: isFavorite ? "Removed from favorites" : "Added to favorites",
+      description: isFavorite 
+        ? "Recipe has been removed from your favorites"
+        : "Recipe has been added to your favorites",
+    });
+    // In a full implementation, this would update the database
   };
   
   const shareRecipe = () => {
     // In a real app, this would show share options
-    alert('Share functionality would be implemented here');
+    if (navigator.share) {
+      navigator.share({
+        title: recipe?.title,
+        text: `Check out this delicious recipe: ${recipe?.title}`,
+        url: window.location.href,
+      }).catch((error) => {
+        console.log('Error sharing', error);
+      });
+    } else {
+      toast({
+        title: "Share",
+        description: "Sharing is not supported on your device or browser.",
+      });
+    }
   };
 
   if (loading) {
@@ -46,7 +79,7 @@ const RecipeDetail = () => {
       <div className="min-h-screen flex flex-col">
         <NavBar />
         <div className="flex-grow flex items-center justify-center">
-          <p className="text-lg">Loading recipe...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-recipe"></div>
         </div>
         <Footer />
       </div>

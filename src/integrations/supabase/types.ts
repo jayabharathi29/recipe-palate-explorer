@@ -9,7 +9,162 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      cuisines: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      dietary_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      difficulty_levels: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      recipe_dietary: {
+        Row: {
+          dietary_id: string
+          recipe_id: string
+        }
+        Insert: {
+          dietary_id: string
+          recipe_id: string
+        }
+        Update: {
+          dietary_id?: string
+          recipe_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_dietary_dietary_id_fkey"
+            columns: ["dietary_id"]
+            isOneToOne: false
+            referencedRelation: "dietary_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_dietary_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipes: {
+        Row: {
+          cooking_time: number | null
+          created_at: string
+          cuisine_id: string | null
+          description: string | null
+          difficulty_id: string | null
+          id: string
+          image_url: string | null
+          ingredients: Json | null
+          instructions: Json | null
+          preparation_time: number | null
+          servings: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cooking_time?: number | null
+          created_at?: string
+          cuisine_id?: string | null
+          description?: string | null
+          difficulty_id?: string | null
+          id?: string
+          image_url?: string | null
+          ingredients?: Json | null
+          instructions?: Json | null
+          preparation_time?: number | null
+          servings?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cooking_time?: number | null
+          created_at?: string
+          cuisine_id?: string | null
+          description?: string | null
+          difficulty_id?: string | null
+          id?: string
+          image_url?: string | null
+          ingredients?: Json | null
+          instructions?: Json | null
+          preparation_time?: number | null
+          servings?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipes_cuisine_id_fkey"
+            columns: ["cuisine_id"]
+            isOneToOne: false
+            referencedRelation: "cuisines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipes_difficulty_id_fkey"
+            columns: ["difficulty_id"]
+            isOneToOne: false
+            referencedRelation: "difficulty_levels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

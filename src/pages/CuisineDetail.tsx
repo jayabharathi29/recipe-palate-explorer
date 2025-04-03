@@ -5,44 +5,69 @@ import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import RecipeCard from '../components/RecipeCard';
 import { ChevronLeft } from 'lucide-react';
-
-// Mock data
-import { getRecipesByCuisine } from '../data/mockData';
+import { fetchRecipesByCuisine } from '../services/recipeService';
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const CuisineDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [recipes, setRecipes] = useState<any[]>([]);
+  const [cuisine, setCuisine] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
-  const cuisineData = {
-    chinese: {
-      name: 'Chinese',
-      description: 'Chinese cuisine is one of the oldest and most diverse in the world. It originated from different regions of China and has been spread across the world from East Asia to North America, Australasia and Western Europe. The most praised are Cantonese cuisine, Shandong cuisine, Jiangsu cuisine and Sichuan cuisine.',
-      banner: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&q=80',
-    },
-    indian: {
-      name: 'Indian',
-      description: 'Indian cuisine consists of a variety of regional and traditional cuisines native to the Indian subcontinent. Given the diversity in soil, climate, culture, ethnic groups, and occupations, these cuisines vary substantially and use locally available spices, herbs, vegetables, and fruits.',
-      banner: 'https://images.unsplash.com/photo-1585937421612-70a008356c36?auto=format&fit=crop&q=80',
-    },
-    arabic: {
-      name: 'Arabic',
-      description: 'Arabic cuisine is the cuisine of the Arabs, defined as the various regional cuisines spanning the Arab world, from the Maghreb to the Fertile Crescent and the Arabian Peninsula. The cuisines are often centuries old and reflect the culture of trading in spices, herbs, and foods.',
-      banner: 'https://images.unsplash.com/photo-1541518763069-e3df6207a5e7?auto=format&fit=crop&q=80',
-    },
-  };
+  const { toast } = useToast();
 
   useEffect(() => {
     window.scrollTo(0, 0);
     if (id) {
-      // In a real app, this would be an API call
-      const foundRecipes = getRecipesByCuisine(id);
-      setRecipes(foundRecipes);
-      setLoading(false);
+      loadCuisineData(id);
     }
   }, [id]);
+  
+  const loadCuisineData = async (cuisineId: string) => {
+    try {
+      setLoading(true);
+      
+      // Fetch cuisine details
+      const { data: cuisineData, error: cuisineError } = await supabase
+        .from('cuisines')
+        .select('*')
+        .eq('id', cuisineId)
+        .single();
+      
+      if (cuisineError) {
+        throw cuisineError;
+      }
+      
+      setCuisine(cuisineData);
+      
+      // Fetch recipes for this cuisine
+      const recipesData = await fetchRecipesByCuisine(cuisineId);
+      setRecipes(recipesData);
+    } catch (error) {
+      toast({
+        title: "Error loading cuisine",
+        description: "There was an error loading the cuisine data. Please try again later.",
+        variant: "destructive"
+      });
+      console.error('Error loading cuisine data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (!id || !Object.keys(cuisineData).includes(id)) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <NavBar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-recipe"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!cuisine) {
     return (
       <div className="min-h-screen flex flex-col">
         <NavBar />
@@ -59,8 +84,6 @@ const CuisineDetail = () => {
     );
   }
 
-  const cuisine = cuisineData[id as keyof typeof cuisineData];
-
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
@@ -69,7 +92,7 @@ const CuisineDetail = () => {
         {/* Banner */}
         <div 
           className="relative h-64 md:h-80 bg-cover bg-center"
-          style={{ backgroundImage: `url(${cuisine.banner})` }}
+          style={{ backgroundImage: `url(${cuisine.image_url})` }}
         >
           <div className="absolute inset-0 bg-black opacity-50"></div>
           <div className="container mx-auto px-4 relative h-full flex flex-col justify-center">
@@ -91,11 +114,7 @@ const CuisineDetail = () => {
           
           <h2 className="text-2xl font-bold mb-6">Popular {cuisine.name} Recipes</h2>
           
-          {loading ? (
-            <div className="flex justify-center py-10">
-              <p className="text-gray-500">Loading recipes...</p>
-            </div>
-          ) : recipes.length > 0 ? (
+          {recipes.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {recipes.map(recipe => (
                 <RecipeCard
