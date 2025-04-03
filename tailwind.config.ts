@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,12 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				recipe: {
+					DEFAULT: '#F97316', // Orange color for button
+					easy: '#78CA42',    // Green for Easy difficulty
+					medium: '#F5C518',  // Yellow for Medium difficulty
+					hard: '#E63C3C'     // Red for Hard difficulty
 				}
 			},
 			borderRadius: {
