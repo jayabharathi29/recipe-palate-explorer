@@ -1,3 +1,4 @@
+
 import { RecipeCardProps } from '../components/RecipeCard';
 
 interface RecipeDetails extends RecipeCardProps {
@@ -733,4 +734,75 @@ export const mockRecipes: RecipeDetails[] = [
     id: '20',
     title: 'Tabbouleh',
     imageUrl: 'https://images.unsplash.com/photo-1580687572594-099b23530ab8?auto=format&fit=crop&q=80',
-    preparation
+    preparationTime: 25,
+    servings: 6,
+    difficulty: 'Easy',
+    description: 'Fresh and vibrant Middle Eastern salad with parsley, bulgur, and fresh vegetables',
+    ingredients: [
+      '1/2 cup fine bulgur wheat',
+      '4 bunches fresh parsley, finely chopped',
+      '2 tomatoes, diced',
+      '1 cucumber, diced',
+      '4 green onions, finely chopped',
+      '1/4 cup fresh mint, chopped',
+      '1/4 cup olive oil',
+      '1/4 cup lemon juice',
+      'Salt and pepper to taste'
+    ],
+    instructions: [
+      'Rinse bulgur and soak in cold water for 30 minutes, then drain well',
+      'Finely chop parsley, mint, green onions, tomatoes, and cucumber',
+      'In a large bowl, combine all chopped vegetables with drained bulgur',
+      'Mix olive oil, lemon juice, salt, and pepper in a separate bowl',
+      'Pour dressing over the salad and toss gently',
+      'Refrigerate for at least 30 minutes before serving to let flavors meld',
+      'Serve chilled, traditionally with lettuce leaves for scooping'
+    ],
+    cuisine: 'Arabic',
+    dietary: 'Vegetarian'
+  },
+  {
+    id: '21',
+    title: 'Mansaf',
+    imageUrl: 'https://images.unsplash.com/photo-1585937421612-70a008356c36?auto=format&fit=crop&q=80',
+    preparationTime: 120,
+    servings: 8,
+    difficulty: 'Hard',
+    description: 'Traditional Jordanian dish of lamb cooked in fermented dried yogurt sauce served with rice',
+    ingredients: [
+      '1.5 kg lamb, cut into pieces',
+      '500g jameed (dried yogurt), soaked and blended (or 4 cups liquid jameed)',
+      '3 cups rice',
+      '1 cup ghee or clarified butter',
+      '2 onions, chopped',
+      '4 cloves garlic, minced',
+      '1 tbsp baharat spice mix',
+      '1 tsp turmeric',
+      '1/4 cup pine nuts',
+      '1/4 cup almonds',
+      'Fresh parsley for garnish',
+      'Thin Arabic bread'
+    ],
+    instructions: [
+      'Sauté onions and garlic in ghee until golden',
+      'Add lamb pieces and brown on all sides',
+      'Add baharat, turmeric, salt, and pepper, stir well',
+      'Cover with water and simmer for 1 hour until meat is tender',
+      'If using solid jameed, soak in water, blend, and strain',
+      'Add jameed liquid to the meat and simmer for another 30 minutes',
+      'Cook rice according to package instructions, adding turmeric for color',
+      'Toast nuts in ghee until golden',
+      'Line serving platter with thin Arabic bread',
+      'Spread rice over bread, arrange meat pieces on top',
+      'Pour jameed sauce over the dish',
+      'Garnish with toasted nuts and parsley'
+    ],
+    cuisine: 'Arabic',
+    dietary: 'Non-Vegetarian'
+  }
+];
+
+// Helper function to get recipe by ID
+export const getRecipeById = (id: string): RecipeDetails | undefined => {
+  return mockRecipes.find(recipe => recipe.id === id);
+};
