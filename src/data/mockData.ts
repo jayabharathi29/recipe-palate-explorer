@@ -1,3 +1,4 @@
+
 import { RecipeCardProps } from '../components/RecipeCard';
 
 interface RecipeDetails extends RecipeCardProps {
@@ -733,4 +734,86 @@ export const mockRecipes: RecipeDetails[] = [
     id: '20',
     title: 'Tabbouleh',
     imageUrl: 'https://images.unsplash.com/photo-1580687572594-099b23530ab8?auto=format&fit=crop&q=80',
-    preparation
+    preparationTime: 25,
+    servings: 6,
+    difficulty: 'Easy',
+    description: 'Fresh and vibrant Lebanese salad with parsley, mint, and bulgur wheat',
+    ingredients: [
+      '1 cup bulgur wheat, fine grade',
+      '4 cups fresh parsley, finely chopped',
+      '1 cup fresh mint leaves, chopped',
+      '4 green onions, finely sliced',
+      '2 tomatoes, diced',
+      '1 cucumber, diced',
+      '1/4 cup olive oil',
+      '1/4 cup lemon juice',
+      'Salt and pepper to taste'
+    ],
+    instructions: [
+      'Rinse bulgur wheat and soak in hot water for 15 minutes until tender, then drain well',
+      'In a large bowl, combine parsley, mint, green onions, tomatoes, and cucumber',
+      'Add the drained bulgur wheat and mix gently',
+      'In a small bowl, whisk together olive oil, lemon juice, salt, and pepper',
+      'Pour dressing over the salad and toss to combine',
+      'Refrigerate for at least 30 minutes before serving to allow flavors to meld',
+      'Serve chilled as a side dish or with pita bread'
+    ],
+    cuisine: 'Arabic',
+    dietary: 'Vegetarian'
+  }
+];
+
+// Adding mock filter and search functions since they're imported in Recipes.tsx but weren't defined in mockData.ts
+export const filterRecipes = async (filters: { cuisine: string[], dietary: string[], difficulty: string[] }) => {
+  return mockRecipes.filter(recipe => {
+    // Filter by cuisine if any selected
+    if (filters.cuisine.length > 0 && !filters.cuisine.includes(recipe.cuisine)) {
+      return false;
+    }
+    
+    // Filter by dietary if any selected
+    if (filters.dietary.length > 0 && !filters.dietary.includes(recipe.dietary)) {
+      return false;
+    }
+    
+    // Filter by difficulty if any selected
+    if (filters.difficulty.length > 0 && !filters.difficulty.includes(recipe.difficulty)) {
+      return false;
+    }
+    
+    return true;
+  });
+};
+
+export const searchRecipes = async (query: string) => {
+  const searchTerm = query.toLowerCase();
+  return mockRecipes.filter(recipe => {
+    return (
+      recipe.title.toLowerCase().includes(searchTerm) ||
+      recipe.description.toLowerCase().includes(searchTerm) ||
+      recipe.cuisine.toLowerCase().includes(searchTerm) ||
+      recipe.ingredients.some(ingredient => ingredient.toLowerCase().includes(searchTerm))
+    );
+  });
+};
+
+export const fetchRecipes = async () => {
+  return mockRecipes;
+};
+
+export const fetchRecipeById = async (id: string) => {
+  return mockRecipes.find(recipe => recipe.id === id) || null;
+};
+
+export const fetchRecipesByCuisine = async (cuisineId: string) => {
+  // In the mock data, we're using cuisine name instead of ID
+  // This is just for mock purposes, in the real app with Supabase, we would use proper IDs
+  const cuisineName = cuisineId === "1" ? "Italian" : 
+                      cuisineId === "2" ? "Chinese" :
+                      cuisineId === "3" ? "Mexican" :
+                      cuisineId === "4" ? "Indian" :
+                      cuisineId === "5" ? "Japanese" :
+                      cuisineId === "6" ? "Arabic" : "";
+  
+  return mockRecipes.filter(recipe => recipe.cuisine === cuisineName);
+};
