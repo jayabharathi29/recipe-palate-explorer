@@ -1,18 +1,25 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, User, LogIn, MenuIcon, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, User, LogIn, MenuIcon, X, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   
-  // Placeholder for authentication state
-  const isAuthenticated = false;
+  const isAuthenticated = !!user;
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
   };
 
   return (
@@ -56,10 +63,20 @@ const NavBar = () => {
 
             {/* Auth Buttons */}
             {isAuthenticated ? (
-              <Button variant="outline" className="flex items-center gap-2">
-                <User size={16} />
-                <span>Profile</span>
-              </Button>
+              <div className="flex items-center space-x-3">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <User size={16} />
+                  <span>Profile</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2"
+                >
+                  <LogOut size={16} />
+                  <span>Logout</span>
+                </Button>
+              </div>
             ) : (
               <Link to="/login">
                 <Button className="flex items-center gap-2 bg-recipe hover:bg-recipe/90">
@@ -105,10 +122,20 @@ const NavBar = () => {
               <Link to="/cuisines" className="font-medium py-2 hover:text-recipe">Cuisines</Link>
               
               {isAuthenticated ? (
-                <Button variant="outline" className="flex items-center justify-center gap-2 w-full">
-                  <User size={16} />
-                  <span>Profile</span>
-                </Button>
+                <>
+                  <Button variant="outline" className="flex items-center justify-center gap-2 w-full">
+                    <User size={16} />
+                    <span>Profile</span>
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleSignOut}
+                    className="flex items-center justify-center gap-2 w-full"
+                  >
+                    <LogOut size={16} />
+                    <span>Logout</span>
+                  </Button>
+                </>
               ) : (
                 <Link to="/login" className="w-full">
                   <Button className="flex items-center justify-center gap-2 w-full bg-recipe hover:bg-recipe/90">
