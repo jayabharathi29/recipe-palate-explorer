@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
@@ -15,6 +14,7 @@ const Recipes = () => {
     cuisine: [] as string[],
     dietary: [] as string[],
     difficulty: [] as string[],
+    recipes: [] as string[],
   });
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -51,7 +51,8 @@ const Recipes = () => {
         setRecipes(results);
       } else {
         // If search is cleared, apply only filters
-        if (activeFilters.cuisine.length > 0 || activeFilters.dietary.length > 0 || activeFilters.difficulty.length > 0) {
+        if (activeFilters.cuisine.length > 0 || activeFilters.dietary.length > 0 || 
+            activeFilters.difficulty.length > 0 || activeFilters.recipes.length > 0) {
           const results = await filterRecipes(activeFilters);
           setRecipes(results);
         } else {
@@ -75,6 +76,7 @@ const Recipes = () => {
     cuisine: string[];
     dietary: string[];
     difficulty: string[];
+    recipes: string[];
   }) => {
     try {
       setLoading(true);
@@ -88,7 +90,8 @@ const Recipes = () => {
         setRecipes(filteredResults);
       } else {
         // If no search query, just apply filters
-        if (filters.cuisine.length > 0 || filters.dietary.length > 0 || filters.difficulty.length > 0) {
+        if (filters.cuisine.length > 0 || filters.dietary.length > 0 || 
+            filters.difficulty.length > 0 || filters.recipes.length > 0) {
           const filteredResults = await filterRecipes(filters);
           setRecipes(filteredResults);
         } else {
@@ -218,7 +221,7 @@ const Recipes = () => {
                   className="recipe-btn"
                   onClick={() => {
                     setSearchQuery('');
-                    setActiveFilters({ cuisine: [], dietary: [], difficulty: [] });
+                    setActiveFilters({ cuisine: [], dietary: [], difficulty: [], recipes: [] });
                     loadRecipes();
                   }}
                 >

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { RecipeCardProps } from "@/components/RecipeCard";
 
@@ -14,6 +13,7 @@ export interface FilterOptions {
   cuisine: string[];
   dietary: string[];
   difficulty: string[];
+  recipes: string[];
 }
 
 // Fetch all recipes
@@ -108,6 +108,32 @@ export const fetchRecipesByCuisine = async (cuisineId: string): Promise<RecipeCa
 
 // Filter recipes based on provided criteria
 export const filterRecipes = async (filters: FilterOptions): Promise<RecipeCardProps[]> => {
+  // If specific recipes are selected, prioritize those
+  if (filters.recipes && filters.recipes.length > 0) {
+    let query = supabase
+      .from('recipes')
+      .select(`
+        id,
+        title,
+        image_url as imageUrl,
+        preparation_time as preparationTime,
+        servings,
+        difficulty_levels!inner(name as difficulty),
+        cuisines!inner(name as cuisine)
+      `)
+      .in('id', filters.recipes);
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error filtering recipes by id:', error);
+      throw error;
+    }
+    
+    return data || [];
+  }
+  
+  // Otherwise, apply the other filters
   let query = supabase
     .from('recipes')
     .select(`
