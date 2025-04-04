@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { RecipeCardProps } from "@/components/RecipeCard";
 
@@ -82,6 +83,15 @@ export const fetchRecipeById = async (id: string): Promise<RecipeDetails | null>
     dietary = dietaryData.map((d: any) => d.dietary_types.name).join(', ');
   }
 
+  // Convert ingredients and instructions to string arrays, ensuring all elements are strings
+  const ingredients: string[] = Array.isArray(data.ingredients) 
+    ? data.ingredients.map(item => String(item))
+    : [];
+  
+  const instructions: string[] = Array.isArray(data.instructions)
+    ? data.instructions.map(item => String(item))
+    : [];
+
   return {
     id: data.id,
     title: data.title,
@@ -92,9 +102,8 @@ export const fetchRecipeById = async (id: string): Promise<RecipeDetails | null>
     difficulty: data.difficulty_levels.name as 'Easy' | 'Medium' | 'Hard',
     cuisine: data.cuisines.name,
     dietary,
-    // Convert JSONB arrays to string arrays if needed
-    ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
-    instructions: Array.isArray(data.instructions) ? data.instructions : []
+    ingredients,
+    instructions
   };
 };
 
