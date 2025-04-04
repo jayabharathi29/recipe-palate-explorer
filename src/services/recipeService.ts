@@ -23,10 +23,10 @@ export const fetchRecipes = async (): Promise<RecipeCardProps[]> => {
     .select(`
       id,
       title,
-      image_url as imageUrl,
-      preparation_time as preparationTime,
+      image_url,
+      preparation_time,
       servings,
-      difficulty_levels!inner(name as difficulty)
+      difficulty_levels!inner(name)
     `)
     .order('created_at', { ascending: false });
 
@@ -35,7 +35,14 @@ export const fetchRecipes = async (): Promise<RecipeCardProps[]> => {
     throw error;
   }
 
-  return data || [];
+  return data.map(item => ({
+    id: item.id,
+    title: item.title,
+    imageUrl: item.image_url,
+    preparationTime: item.preparation_time,
+    servings: item.servings,
+    difficulty: item.difficulty_levels.name as 'Easy' | 'Medium' | 'Hard',
+  }));
 };
 
 // Fetch recipe by ID
@@ -46,13 +53,13 @@ export const fetchRecipeById = async (id: string): Promise<RecipeDetails | null>
       id,
       title,
       description,
-      image_url as imageUrl,
-      preparation_time as preparationTime,
+      image_url,
+      preparation_time,
       servings,
       ingredients,
       instructions,
-      difficulty_levels!inner(name as difficulty),
-      cuisines!inner(name as cuisine)
+      difficulty_levels!inner(name),
+      cuisines!inner(name)
     `)
     .eq('id', id)
     .single();
@@ -76,7 +83,14 @@ export const fetchRecipeById = async (id: string): Promise<RecipeDetails | null>
   }
 
   return {
-    ...data,
+    id: data.id,
+    title: data.title,
+    imageUrl: data.image_url,
+    description: data.description,
+    preparationTime: data.preparation_time,
+    servings: data.servings,
+    difficulty: data.difficulty_levels.name as 'Easy' | 'Medium' | 'Hard',
+    cuisine: data.cuisines.name,
     dietary,
     // Convert JSONB arrays to string arrays if needed
     ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
@@ -91,10 +105,10 @@ export const fetchRecipesByCuisine = async (cuisineId: string): Promise<RecipeCa
     .select(`
       id,
       title,
-      image_url as imageUrl,
-      preparation_time as preparationTime,
+      image_url,
+      preparation_time,
       servings,
-      difficulty_levels!inner(name as difficulty)
+      difficulty_levels!inner(name)
     `)
     .eq('cuisine_id', cuisineId);
 
@@ -103,7 +117,14 @@ export const fetchRecipesByCuisine = async (cuisineId: string): Promise<RecipeCa
     throw error;
   }
 
-  return data || [];
+  return data.map(item => ({
+    id: item.id,
+    title: item.title,
+    imageUrl: item.image_url,
+    preparationTime: item.preparation_time,
+    servings: item.servings,
+    difficulty: item.difficulty_levels.name as 'Easy' | 'Medium' | 'Hard',
+  }));
 };
 
 // Filter recipes based on provided criteria
@@ -115,11 +136,11 @@ export const filterRecipes = async (filters: FilterOptions): Promise<RecipeCardP
       .select(`
         id,
         title,
-        image_url as imageUrl,
-        preparation_time as preparationTime,
+        image_url,
+        preparation_time,
         servings,
-        difficulty_levels!inner(name as difficulty),
-        cuisines!inner(name as cuisine)
+        difficulty_levels!inner(name),
+        cuisines!inner(name)
       `)
       .in('id', filters.recipes);
     
@@ -130,7 +151,14 @@ export const filterRecipes = async (filters: FilterOptions): Promise<RecipeCardP
       throw error;
     }
     
-    return data || [];
+    return data.map(item => ({
+      id: item.id,
+      title: item.title,
+      imageUrl: item.image_url,
+      preparationTime: item.preparation_time,
+      servings: item.servings,
+      difficulty: item.difficulty_levels.name as 'Easy' | 'Medium' | 'Hard',
+    }));
   }
   
   // Otherwise, apply the other filters
@@ -139,11 +167,11 @@ export const filterRecipes = async (filters: FilterOptions): Promise<RecipeCardP
     .select(`
       id,
       title,
-      image_url as imageUrl,
-      preparation_time as preparationTime,
+      image_url,
+      preparation_time,
       servings,
-      difficulty_levels!inner(name as difficulty),
-      cuisines!inner(name as cuisine)
+      difficulty_levels!inner(name),
+      cuisines!inner(name)
     `);
 
   // Apply cuisine filter
@@ -181,6 +209,16 @@ export const filterRecipes = async (filters: FilterOptions): Promise<RecipeCardP
     throw error;
   }
 
+  // Transform the data to match our RecipeCardProps interface
+  const transformedData = data.map(item => ({
+    id: item.id,
+    title: item.title,
+    imageUrl: item.image_url,
+    preparationTime: item.preparation_time,
+    servings: item.servings,
+    difficulty: item.difficulty_levels.name as 'Easy' | 'Medium' | 'Hard',
+  }));
+
   // If dietary filters are applied, we need to filter results further
   if (filters.dietary && filters.dietary.length > 0) {
     // Get recipes with the specified dietary types
@@ -197,12 +235,12 @@ export const filterRecipes = async (filters: FilterOptions): Promise<RecipeCardP
       const dietaryRecipeIds = new Set(dietaryRecipes.map((dr: any) => dr.recipe_id));
       
       // Filter the recipes to only include those with matching dietary preferences
-      return data?.filter(recipe => dietaryRecipeIds.has(recipe.id)) || [];
+      return transformedData.filter(recipe => dietaryRecipeIds.has(recipe.id));
     }
     return []; // No recipes match the dietary filters
   }
 
-  return data || [];
+  return transformedData;
 };
 
 // Search recipes by query
@@ -216,10 +254,10 @@ export const searchRecipes = async (query: string): Promise<RecipeCardProps[]> =
       id,
       title,
       description,
-      image_url as imageUrl,
-      preparation_time as preparationTime,
+      image_url,
+      preparation_time,
       servings,
-      difficulty_levels!inner(name as difficulty)
+      difficulty_levels!inner(name)
     `)
     .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
   
@@ -228,7 +266,14 @@ export const searchRecipes = async (query: string): Promise<RecipeCardProps[]> =
     throw recipesError;
   }
   
-  return recipesData || [];
+  return recipesData.map(item => ({
+    id: item.id,
+    title: item.title,
+    imageUrl: item.image_url,
+    preparationTime: item.preparation_time,
+    servings: item.servings,
+    difficulty: item.difficulty_levels.name as 'Easy' | 'Medium' | 'Hard',
+  }));
 };
 
 // Fetch all cuisines
